@@ -141,7 +141,7 @@ async function onSetNetworkPropertiesFromFile(){
             return;
         }
 
-        graph = graphJson;
+        graph = new Graph(graphJson.numberOfNodes, graphJson.edges, graphJson.cutSNodes);
         var properties = NetworkProperties.getProperties(graph);
 
         displayProperties(properties);
@@ -189,7 +189,13 @@ function checkNetworkFromFile(graphJson){
         }
     });
 
-    // TODO: check cutSNodes as well!
+    if(graphJson.cutSNodes && graphJson.cutSNodes.length != 0){
+        graphJson.cutSNodes.forEach(node => {
+            if(node < 1 || node > graphJson.numberOfNodes){
+                throw Error(`Invalid node number in the provided cut set! Node #${node} does not exist in the graph!`);
+            }
+        });
+    }
 }
 
 function IsEdgeValid(edge){
@@ -208,28 +214,29 @@ function showById(id){
 }
 
 function displayProperties(properties){
-    showById(RESULTS_ID);
-
     var flowResult = properties.validNetwork ? properties.networkFlowValue : "-"
     $(`#${RESULT_FLOW_ID}`).html(flowResult);
 
     var cutResult = properties.graph.cutProvided ? (properties.validCut ? properties.cutValue : "-") : "-";
     $(`#${RESULT_CUT_ID}`).html(cutResult);
 
-    $(`#${RESULT_FLOW_ERRORS_ID}`).html(generateErrorListHTML(properties.networkErrors));
-    $(`#${RESULT_CUT_ERRORS_ID}`).html(generateErrorListHTML(properties.cutErrors));
+    $(`#${RESULT_FLOW_ERRORS_ID}`).html(generateErrorListHTML(properties.errors, NetworkError.FLOW_ERROR));
+    $(`#${RESULT_CUT_ERRORS_ID}`).html(generateErrorListHTML(properties.errors, NetworkError.CUT_ERROR));
+
+    showById(RESULTS_ID);
 
     graphVisualization = GraphVisualizer.visualize(properties.graph, GRAPH_VISUALIZATION_ID);
 }
 
-function generateErrorListHTML(errors){
-    if(!errors){
+function generateErrorListHTML(errors, errorType){
+    var filteredErrors = errors ? errors.filter(error => error.type == errorType) : [];
+    if(filteredErrors.length == 0){
         return "<br><p>No errors found.</p>";
     }
-    else{
+    else {
         var html = "<ul>";
-        for(var i = 0; i < errors.length; ++i){
-            html += `<li>${errors[i].message}</li>`;
+        for(var i = 0; i < filteredErrors.length; ++i){
+            html += `<li>${filteredErrors[i].message}</li>`;
         }
         html += "</ul>";
         return html;

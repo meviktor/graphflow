@@ -15,11 +15,11 @@ export class GraphVisualizer{
                 id: `Node#${i + 1}`,
                 source: graph.edges[i].fromNode,
                 target: graph.edges[i].toNode,
-                flowAndCapacity: `${graph.edges[i].flowValue} / ${graph.edges[i].capacity}`,
+                flowAndCapacity: `${graph.edges[i].flowValue} / ${graph.edges[i].capacity}`
             } });
         }
 
-        var layout = {name: 'random'}
+        var layout = {name: 'grid'}
 
         var style = [
             {
