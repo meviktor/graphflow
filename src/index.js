@@ -1,5 +1,7 @@
-import { Graph, Edge } from './graph';
+import { Graph, Edge, NetworkProperties, NetworkError } from './graph';
+import { GraphVisualizer } from './graphVisualizer';
 
+var graphVisualization;
 var graph;
 var numberOfNodes = 0;
 var numberOfEdges = 0;
@@ -7,7 +9,13 @@ var numberOfEdges = 0;
 const GRAPH_MINIMUM_NODES = 2;
 const GRAPH_MINIMUM_EDGES = 1;
 
+const GRAPH_VISUALIZATION_ID = 'graphContainer';
 const EDRE_ROW_ID = "edge";
+const RESULTS_ID = "resultBox";
+const RESULT_FLOW_ID = "networkFlowValue";
+const RESULT_CUT_ID = "networkCutValue";
+const RESULT_FLOW_ERRORS_ID = "flowErrors";
+const RESULT_CUT_ERRORS_ID = "cutErrors";
 const EDGE_EDITOR_ID = "edgeEditor";
 const EDGE_EDITOR_ROW_CONTAINER_ID = "edgeEditorRows";
 const EDGE_FROM_NODE_CLASS = "fromNode";
@@ -18,11 +26,18 @@ const NUM_NODES_NOT_VALID = `Number of nodes provided is not valid! Minimum valu
 const NUM_EDGES_NOT_VALID = `Number of edges provided is not valid! Minimum value must be enterd: ${GRAPH_MINIMUM_EDGES}.`;
 const SOURCE_TEXT = 'will be treated as source';
 const SINK_TEXT = 'will be treated as sink';
+const ERR_CHOOSE_JSON = 'Please choose a .json file!';
+const ERR_JSON_NUMBER_OF_NODES = 'The field containing the number of nodes must exist, having a value of 2 at least!';
+const ERR_JSON_EDGES = 'The field containing the edges of the graph must exist, having a value of 1 at least!';
+const ERR_JSON_WRONG_SYNTAX = 'One or more errors found in the syntax of your json file!';
+const ERR_JSON_FILE_ACCESS = 'A problem occured while working the file - try to unselect the file then choose it again. See console (F12) for details.'
 
 $(document).ready(function(){
     hideById(EDGE_EDITOR_ID);
+    hideById(RESULTS_ID);
     $("#setNumOfNodesAndEdges").click(onSetNumberOfNodesAndEdges);
     $("#setNetworkProperties").click(onSetNetworkProperties);
+    $("#setNetworkPropertiesFromFile").click(onSetNetworkPropertiesFromFile);
 });
 
 function onSetNumberOfNodesAndEdges(){
@@ -67,12 +82,12 @@ function generateEdgeRows(){
                 <input type="number" class="${EDGE_TO_NODE_CLASS}" min="1" max="${numberOfNodes}"/>
             </div>
             <div class="form-group col">
-                <label>Edge capacity: </label>
-                <input type="number" class="${EDGE_EDGE_CAPACITY_CLASS}" min="0"/>
-            </div>
-            <div class="form-group col">
                 <label>Flow value: </label>
                 <input type="number" class="${EDGE_FLOW_VALUE_CLASS}" min="0"/>
+            </div>
+            <div class="form-group col">
+                <label>Edge capacity: </label>
+                <input type="number" class="${EDGE_EDGE_CAPACITY_CLASS}" min="0"/>
             </div>
         </div>\n`;
     }
@@ -88,12 +103,54 @@ function onSetNetworkProperties(){
         alert(e.message);
         return;
     }
-    // TODO: start the work with the input graph
+    console.log(NetworkProperties.getProperties(graph));
+}
+
+async function onSetNetworkPropertiesFromFile(){
+    var jsonFile = document.getElementById('networkFileInput').files[0];
+
+    if(!jsonFile){
+        alert(ERR_CHOOSE_JSON);
+        return;
+    }
+    else{
+        var rawStr, graphJson;
+
+        try{
+            rawStr = await jsonFile.text();
+        }
+        catch(e){
+            alert(ERR_JSON_FILE_ACCESS);
+            console.log(`Error - ${jsonFile.name}: ${e.message}`);
+            return;
+        }
+
+        try{
+            graphJson = JSON.parse(rawStr);
+        }
+        catch(e){
+            alert(ERR_JSON_WRONG_SYNTAX);
+            return;
+        }
+
+        try{
+            checkNetworkFromFile(graphJson);
+        }
+        catch(e){
+            alert(e.message);
+            return;
+        }
+
+        graph = graphJson;
+        var properties = NetworkProperties.getProperties(graph);
+
+        displayProperties(properties);
+    }
 }
 
 function composeGraph(){
     var edges = [];
-    for(var i = 0; i < numberOfNodes; i++){
+    for(var i = 0; i < numberOfEdges; i++){
         var edgeDataContainer = $(`#${EDRE_ROW_ID + i}`);
 
         var fromNode = Number(edgeDataContainer.find($(`.${EDGE_FROM_NODE_CLASS}`))[0].value);
@@ -104,12 +161,35 @@ function composeGraph(){
         var edge = new Edge(fromNode, toNode, edgeCapacity, flowValue);
 
         if(!IsEdgeValid(edge)){
-            throw Error(`Check the entered values of node ${i + 1} - some of them may be missing or invalid.`);
+            throw Error(`Check the entered values of edge ${i + 1} - some of them may be missing or invalid.`);
         }
 
         edges.push(edge);
     }
     return new Graph(numberOfNodes, edges, false);
+}
+
+function checkNetworkFromFile(graphJson){
+    var nodes = Number(graphJson.numberOfNodes);
+
+    if(nodes == NaN && nodes <= 0){
+        throw Error(ERR_JSON_NUMBER_OF_NODES);
+    }
+    if(!graphJson.edges || graphJson.edges.length == 0){
+        throw Error(ERR_JSON_EDGES);
+    }
+    numberOfNodes = nodes;
+    numberOfEdges = graphJson.edges;
+
+    graphJson.edges.forEach((edge, i) => {
+        if(!IsEdgeValid(edge)){
+            numberOfNodes = 0;
+            numberOfEdges = 0;
+            throw Error(`Check the entered values of edge ${i + 1} - some of them may be missing or invalid.`);
+        }
+    });
+
+    // TODO: check cutSNodes as well!
 }
 
 function IsEdgeValid(edge){
@@ -125,4 +205,33 @@ function hideById(id){
 
 function showById(id){
     $(`#${id}`).show();
+}
+
+function displayProperties(properties){
+    showById(RESULTS_ID);
+
+    var flowResult = properties.validNetwork ? properties.networkFlowValue : "-"
+    $(`#${RESULT_FLOW_ID}`).html(flowResult);
+
+    var cutResult = properties.graph.cutProvided ? (properties.validCut ? properties.cutValue : "-") : "-";
+    $(`#${RESULT_CUT_ID}`).html(cutResult);
+
+    $(`#${RESULT_FLOW_ERRORS_ID}`).html(generateErrorListHTML(properties.networkErrors));
+    $(`#${RESULT_CUT_ERRORS_ID}`).html(generateErrorListHTML(properties.cutErrors));
+
+    graphVisualization = GraphVisualizer.visualize(properties.graph, GRAPH_VISUALIZATION_ID);
+}
+
+function generateErrorListHTML(errors){
+    if(!errors){
+        return "<br><p>No errors found.</p>";
+    }
+    else{
+        var html = "<ul>";
+        for(var i = 0; i < errors.length; ++i){
+            html += `<li>${errors[i].message}</li>`;
+        }
+        html += "</ul>";
+        return html;
+    }
 }

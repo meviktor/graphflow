@@ -9,57 +9,115 @@
     <link href="graphflow.css" rel="stylesheet" />
   </head>
   <body>
-    <script src="./bundle.js"></script>
+    <!--<script src="./bundle.js"></script>-->
     <div>
       <h1 class="pageTitle">Networks and flows</h1>
     </div>
-    <div id="numOfDecisionVariablesAndConstraintsContainer" class="card baseBox lpModelEditorBox">
-      <div class="card-header" id="basicParams">
-          <h5 class="mb-0">
-              <button class="btn btn-link" data-toggle="collapse" data-target="#collapseBasic">
-                  Number of nodes and edges of the graph
-              </button>
-          </h5>
+    <div class="card baseBox lpModelEditorBox">
+      <div class="card-header" id="networkByEditor">
+        <h4 class="mb-0">
+          <button class="btn btn-link" data-toggle="collapse" data-target="#collapseNetworkByHand">
+              Network editor
+          </button>
+        </h4>
       </div>
-      <div id="collapseBasic" class="collapse show">
-          <div class="card-body">
-              <div class="row mb-1">
-                  <div class="form-group col-xl-3 col-md-4 col-sm-6 col-xs-12">
-                      <label>Number of nodes:</label>
-                      <div class="input-group">
-                          <input type="number" class="form-control" id="numNodes"/>
-                      </div>
-                  </div>
-                  <div class="form-group col-xl-3 col-md-4 col-sm-6 col-xs-12">
-                      <label>Number of edges:</label>
-                      <div class="input-group">
-                          <input type="number" class="form-control" id="numEdges"/>
-                      </div>
-                  </div>
-              </div>
-              <button id="setNumOfNodesAndEdges" class="btn btn-primary btn-round">Set</button>
-          </div>
-      </div>
-    </div>
-    <div id="edgeEditor" class="card baseBox lpModelEditorBox">
-      <div class="card-header" id="edgeParams">
-        <h5 class="mb-0">
-            <button class="btn btn-link" data-toggle="collapse" data-target="#collapseEdge">
-                Network
-            </button>
-        </h5>
-      </div>
-      <div id="collapseEdge" class="collapse show">
+      <div id="collapseNetworkByHand" class="collapse hide">
         <div class="card-body">
-            <div id="edgeEditorRows">
-                <!--generated content-->
+          <div id="numOfDecisionVariablesAndConstraintsContainer" class="card baseBox lpModelEditorBox">
+            <div class="card-header" id="basicParams">
+                <h5 class="mb-0">
+                    <button class="btn btn-link" data-toggle="collapse" data-target="#collapseBasic">
+                        Number of nodes and edges of the graph
+                    </button>
+                </h5>
             </div>
-            <button id="setNetworkProperties" class="btn btn-primary btn-round">Set</button>
+            <div id="collapseBasic" class="collapse show">
+                <div class="card-body">
+                    <div class="row mb-1">
+                        <div class="form-group col-xl-3 col-md-4 col-sm-6 col-xs-12">
+                            <label>Number of nodes:</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="numNodes"/>
+                            </div>
+                        </div>
+                        <div class="form-group col-xl-3 col-md-4 col-sm-6 col-xs-12">
+                            <label>Number of edges:</label>
+                            <div class="input-group">
+                                <input type="number" class="form-control" id="numEdges"/>
+                            </div>
+                        </div>
+                    </div>
+                    <button id="setNumOfNodesAndEdges" class="btn btn-primary btn-round">Set</button>
+                </div>
+            </div>
+          </div>
+          <div id="edgeEditor" class="card baseBox lpModelEditorBox">
+            <div class="card-header" id="edgeParams">
+              <h5 class="mb-0">
+                  <button class="btn btn-link" data-toggle="collapse" data-target="#collapseEdge">
+                      Network
+                  </button>
+              </h5>
+            </div>
+            <div id="collapseEdge" class="collapse show">
+              <div class="card-body">
+                  <div id="edgeEditorRows">
+                      <!--generated content-->
+                  </div>
+                  <button id="setNetworkProperties" class="btn btn-primary btn-round">Set</button>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>
-    <div id="resultsBox">
-      <!--result goes here-->
+    <div class="card baseBox lpModelEditorBox">
+      <div class="card-header" id="networkByFile">
+        <h4 class="mb-0">
+          <button class="btn btn-link" data-toggle="collapse" data-target="#collapseNetworkByFile">
+              Upload a network as a JSON file
+          </button>
+        </h4>
+      </div>
+      <div id="collapseNetworkByFile" class="collapse hide">
+        <div class="card-body">
+          <div class="form-group">
+            <label for="networkFileInput">Select a .json file containing the network</label>
+            <input type="file" accept=".json" class="form-control-file" id="networkFileInput">
+          </div>
+          <button id="setNetworkPropertiesFromFile" class="btn btn-primary btn-round">Use this file</button>
+        </div>
+      </div>
+    </div>
+    <div class="card baseBox lpModelEditorBox" id="resultBox">
+      <div class="card-header" id="resultsHeader">
+        <h4 class="mb-0">
+          <button class="btn btn-link" data-toggle="collapse" data-target="#collapseResults">
+              Results
+          </button>
+        </h4>
+      </div>
+      <div id="collapseResults" class="collapse show">
+        <div class="card-body">
+          <div class=row>
+            <div class="col" id="graphContainer"><!--graph visualization goes here--></div>
+            <div class="col">
+              <div class="row">
+                <b>Flow errors:</b>
+                <div id="flowErrors"></div>
+              </div>
+              <div class="row">
+                <b>Cut errors:</b>
+                <div id="cutErrors"></div>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col"><b>Flow value: </b><span id=networkFlowValue></span></div>
+            <div class="col"><b>Cut value:  </b><span id=networkCutValue></span></div>
+          </div>
+        </div>
+      </div>
     </div>
   </body>
 </html>

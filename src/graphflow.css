@@ -19,3 +19,8 @@ input{
     font-weight: 300;
     line-height: 1.2;
 }
+
+#graphContainer{
+    min-height: 500px;
+    min-width: 500px;
+}
