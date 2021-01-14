@@ -38,7 +38,7 @@ export class GraphVisualizer{
                   'text-halign': 'center',
                   'target-arrow-color': '#bbbbbb',
                   'target-arrow-shape': 'triangle',
-                  'line-color': '#bbbbb',
+                  'line-color': '#bbbbbb',
                   'line-style': 'solid',
                   'label': 'data(flowAndCapacity)',
                   'curve-style': 'bezier'
