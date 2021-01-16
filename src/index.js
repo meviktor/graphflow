@@ -24,15 +24,16 @@ const EDGE_TO_NODE_CLASS = "toNode";
 const EDGE_EDGE_CAPACITY_CLASS = "edgeCapacity";
 const EDGE_FLOW_VALUE_CLASS = "flowValue";
 const NODE_CHECKBOX_CLASS = "cut_nodeCheckbox";
-const NUM_NODES_NOT_VALID = `Number of nodes provided is not valid! Minimum value must be enterd: ${GRAPH_MINIMUM_NODES}.`;
-const NUM_EDGES_NOT_VALID = `Number of edges provided is not valid! Minimum value must be enterd: ${GRAPH_MINIMUM_EDGES}.`;
+const NUM_NODES_NOT_VALID = `Number of nodes provided is not valid! Minimum value can be entered here: ${GRAPH_MINIMUM_NODES}.`;
+const NUM_EDGES_NOT_VALID = `Number of edges provided is not valid! Minimum value can be entered here: ${GRAPH_MINIMUM_EDGES}.`;
 const SOURCE_TEXT = 'will be treated as source';
 const SINK_TEXT = 'will be treated as sink';
-const ERR_CHOOSE_JSON = 'Please choose a .json file!';
-const ERR_JSON_NUMBER_OF_NODES = 'The field containing the number of nodes must exist, having a value of 2 at least!';
-const ERR_JSON_EDGES = 'The field containing the edges of the graph must exist, having a value of 1 at least!';
-const ERR_JSON_WRONG_SYNTAX = 'One or more errors found in the syntax of your json file!';
-const ERR_JSON_FILE_ACCESS = 'A problem occured while working the file - try to unselect the file then choose it again. See console (F12) for details.'
+const ERR_CHOOSE_JSON = 'Please choose a JSON file for upload!';
+const ERR_JSON_NUMBER_OF_NODES = 'The JSON file must contain the field named "numberOfNodes" with the number of nodes (at least 2)!';
+const ERR_JSON_EDGES = 'The JSON file must contain the array named "edges" with the list of the edges in it!';
+const ERR_JSON_WRONG_SYNTAX = 'One or more errors found in the syntax of your JSON file!';
+const ERR_JSON_FILE_ACCESS = 'A problem occured while working with your JSON file - try to unselect the file then choose it again! See console (F12) for details.';
+const ERROR_PANEL_INNER_CONTENT_ID = "errorPanelInnerContent";
 
 $(document).ready(function(){
     hideById(EDGE_EDITOR_ID);
@@ -47,11 +48,11 @@ function onSetNumberOfNodesAndEdges(){
     var numEdges = Number($("#numEdges")[0].value);
 
     if(!numberOfDotsValid(numNodes)){
-        alert(NUM_NODES_NOT_VALID);
+        displayErrorOnPage(NUM_NODES_NOT_VALID);
         return;
     }
     if(!numberOfEdgesValid(numEdges)){
-        alert(NUM_EDGES_NOT_VALID);
+        displayErrorOnPage(NUM_EDGES_NOT_VALID);
         return;
     }
 
@@ -117,7 +118,7 @@ function onSetNetworkProperties(){
         console.log(graph);
     }
     catch(e){
-        alert(e.message);
+        displayErrorOnPage(e.message);
         return;
     }
     displayProperties(NetworkProperties.getProperties(graph));
@@ -127,7 +128,7 @@ async function onSetNetworkPropertiesFromFile(){
     var jsonFile = document.getElementById('networkFileInput').files[0];
 
     if(!jsonFile){
-        alert(ERR_CHOOSE_JSON);
+        displayErrorOnPage(ERR_CHOOSE_JSON);
         return;
     }
     else{
@@ -137,7 +138,7 @@ async function onSetNetworkPropertiesFromFile(){
             rawStr = await jsonFile.text();
         }
         catch(e){
-            alert(ERR_JSON_FILE_ACCESS);
+            displayErrorOnPage(ERR_JSON_FILE_ACCESS);
             console.log(`Error - ${jsonFile.name}: ${e.message}`);
             return;
         }
@@ -146,7 +147,7 @@ async function onSetNetworkPropertiesFromFile(){
             graphJson = JSON.parse(rawStr);
         }
         catch(e){
-            alert(ERR_JSON_WRONG_SYNTAX);
+            displayErrorOnPage(ERR_JSON_WRONG_SYNTAX);
             return;
         }
 
@@ -154,7 +155,7 @@ async function onSetNetworkPropertiesFromFile(){
             checkNetworkFromFile(graphJson);
         }
         catch(e){
-            alert(e.message);
+            displayErrorOnPage(e.message);
             return;
         }
 
@@ -201,7 +202,7 @@ function composeGraph(){
 function checkNetworkFromFile(graphJson){
     var nodes = Number(graphJson.numberOfNodes);
 
-    if(nodes == NaN && nodes <= 0){
+    if(isNaN(nodes) || nodes <= 0){
         throw Error(ERR_JSON_NUMBER_OF_NODES);
     }
     if(!graphJson.edges || graphJson.edges.length == 0){
@@ -263,11 +264,21 @@ function generateErrorListHTML(errors, errorType){
         return "<br><p>No errors found.</p>";
     }
     else {
-        var html = "<ul>";
+        var html = `<div style="color: red;"><ul>`;
         for(var i = 0; i < filteredErrors.length; ++i){
             html += `<li>${filteredErrors[i].message}</li>`;
         }
-        html += "</ul>";
+        html += "</ul></div>";
         return html;
     }
+}
+
+function displayErrorOnPage(message){
+    var errorPopupHTML = `<div class="alert alert-danger alert-dismissible fade show" role="alert">
+          ${message}
+          <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>`;
+    $(`#${ERROR_PANEL_INNER_CONTENT_ID}`).append(errorPopupHTML);
 }

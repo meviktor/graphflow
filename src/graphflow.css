@@ -33,3 +33,14 @@ input{
     padding-left: 5px;
     padding-right: 5px;
 }
+
+#errorPanel{
+    width: 100%;
+    position: fixed;
+    top: 0;
+    z-index: 1;
+}
+
+#pageContent{
+    z-index: 0;
+}

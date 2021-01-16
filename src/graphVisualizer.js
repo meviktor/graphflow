@@ -11,14 +11,14 @@ export class GraphVisualizer{
             elements.push({ data: {
                 id: node,
                 displayText: node == 1 ? `${node} (src)` : ( node == graph.numberOfNodes ? `${node} (sink)` : node),
-                class: graph.cutProvided ? (graph.cutSNodes.includes(node) ? "sNodes" : "tNodes") : "regular" 
+                class: (graph.cutProvided && networkProperites.validCut) ? (graph.cutSNodes.includes(node) ? "sNodes" : "tNodes") : "regular" 
             } });
         }
         // edges
         for(var i = 0; i < graph.edges.length; ++i){
             elements.push({ data: {
                 id: `Node#${i + 1}`,
-                class: graph.cutProvided ? (networkProperites.cutEdgeIds.includes(graph.edges[i].id) ? "edgeInCut" : "edgeOutOfCut" ) : "regular",
+                class: (graph.cutProvided && networkProperites.validCut) ? (networkProperites.cutEdgeIds.includes(graph.edges[i].id) ? "edgeInCut" : "edgeOutOfCut" ) : "regular",
                 source: graph.edges[i].fromNode,
                 target: graph.edges[i].toNode,
                 flowAndCapacity: `${graph.edges[i].flowValue} / ${graph.edges[i].capacity}`

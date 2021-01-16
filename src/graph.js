@@ -56,7 +56,7 @@ export class NetworkProperties {
 
         for(var i = 0; i < graph.edges.length; i++){
             if(graph.edges[i].capacity < graph.edges[i].flowValue){
-                errors.push(new NetworkError(NetworkError.FLOW_ERROR, FLOW_ERROR_EDGE_CAPACITY + (i + 1) ));
+                errors.push(new NetworkError(NetworkError.FLOW_ERROR, FLOW_ERROR_EDGE_CAPACITY + (i + 1) + "." ));
             }
             if(graph.edges[i].toNode == sourceNode){
                 errors.push(new NetworkError(NetworkError.FLOW_ERROR, FLOW_ERROR_EDGE_TO_SOURCE));
@@ -71,7 +71,7 @@ export class NetworkProperties {
             var outgoingFlow = this.#calculateFlow(node, graph.edges, false);
 
             if(incomingFlow != outgoingFlow){
-                errors.push(new NetworkError(NetworkError.FLOW_ERROR, FLOW_ERROR_NODE + node));
+                errors.push(new NetworkError(NetworkError.FLOW_ERROR, FLOW_ERROR_NODE + node + "."));
             }
         }
 
