@@ -72,7 +72,7 @@
                     <div id="cutEditor">
                       <!--generated content-->
                   </div>
-                    <button id="setNetworkProperties" class="btn btn-primary btn-round">Set</button>
+                    <button id="setNetworkProperties" class="btn btn-primary btn-round">See result</button>
                 </div>
               </div>
             </div>
@@ -90,7 +90,9 @@
         <div id="collapseNetworkByFile" class="collapse hide">
           <div class="card-body">
             <div class="form-group">
-              <label for="networkFileInput">Select a .json file containing the network</label>
+              <label for="networkFileInput">Select a .json file containing the network. An example can be found 
+                <a href="https://github.com/meviktor/graphflow/blob/master/src/graphJson.json" target="_blank">here</a>.
+              </label>
               <input type="file" accept=".json" class="form-control-file" id="networkFileInput">
             </div>
             <button id="setNetworkPropertiesFromFile" class="btn btn-primary btn-round">Use this file</button>
