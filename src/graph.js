@@ -138,6 +138,23 @@ export class NetworkProperties {
             }
         }
 
+        // Forras: kell, hogy induljon belole legalabb egy el, ha nem -> hiba
+        if(!graph.edges.some(edge => edge.fromNode == sourceNode)){
+            errors.push(new NetworkError(NetworkError.FLOW_ERROR, FLOW_ERROR_NO_EDGE_FROM_SOURCE));
+        }
+
+        // Nyelo: kell, hogy legyen legalabb egy el, ami bele van vezetve, ha nem -> hiba
+        if(!graph.edges.some(edge => edge.toNode == sinkNode)){
+            errors.push(new NetworkError(NetworkError.FLOW_ERROR, FLOW_ERROR_NO_EDGE_TO_SINK));
+        }
+
+        // Izolalt csucsok - nincs olyan el amely az adott csuscsbol indul vagy bele lenne vezetve
+        if(Array.from({length: graph.numberOfNodes}, (_, i) => i + 1)
+            .some(node => !graph.edges.some(edge => edge.fromNode == node || edge.toNode == node))
+        ){
+            errors.push(new NetworkError(NetworkError.FLOW_ERROR, FLOW_ERROR_ISOLATED_NODE));
+        }
+
         // Ha adunk meg csucshalmazt a vagashoz, a forras es a nyelo nem lehet egy halmazban
         if(graph.cutProvided){
             if(graph.cutSNodes.includes(1) && graph.cutSNodes.includes(graph.numberOfNodes)){
@@ -211,6 +228,9 @@ export class NetworkError{
 
 const FLOW_ERROR_EDGE_CAPACITY = 'The capacity of the edge is less than the entered flow value on edge ';
 const FLOW_ERROR_EDGE_TO_SOURCE = 'You cannot use edges directed to the source as a destination!';
+const FLOW_ERROR_NO_EDGE_FROM_SOURCE = 'There is no edge starting from the source!';
 const FLOW_ERROR_EDGE_FROM_SINK = 'You cannot use edges directed from the sink as a departure point!';
+const FLOW_ERROR_NO_EDGE_TO_SINK = 'There is no edge directed to the sink!';
 const FLOW_ERROR_NODE = 'The values of incoming and outgoing flow are not equal on node ';
+const FLOW_ERROR_ISOLATED_NODE = 'You have an isolated node in the graph!';
 const CUT_ERROR_SOURCE_SINK_IN_ONE_SET = 'Soucre and sink must be in seperate node sets!';
