@@ -6,7 +6,13 @@ var graph;
 var numberOfNodes = 0;
 var numberOfEdges = 0;
 
+/**
+ * Ennyi csucs kell minimum (egy forras es egy nyelo).
+ */
 const GRAPH_MINIMUM_NODES = 2;
+/**
+ * Legalabb egy el kell kell.
+ */
 const GRAPH_MINIMUM_EDGES = 1;
 
 const GRAPH_VISUALIZATION_ID = 'graphContainer';
@@ -199,6 +205,10 @@ function composeGraph(){
     return new Graph(numberOfNodes, edges, cutSNodes.length != 0 ? cutSNodes : null);
 }
 
+/**
+ * A feltoltott JSON file formatumat ellenorzi, valamint az abban levo ertekek alapveto validaciojat vegzi.
+ * @param {*} graphJson
+ */
 function checkNetworkFromFile(graphJson){
     var nodes = Number(graphJson.numberOfNodes);
 
@@ -219,6 +229,7 @@ function checkNetworkFromFile(graphJson){
         }
     });
 
+    // Nem letezo csucsot nem lehet felvenni a vagashoz megadott csucshalmazba (min. 1 -> forras, max. numberOfNodes -> nyelo)
     if(graphJson.cutSNodes && graphJson.cutSNodes.length != 0){
         graphJson.cutSNodes.forEach(node => {
             if(node < 1 || node > graphJson.numberOfNodes){
@@ -228,10 +239,17 @@ function checkNetworkFromFile(graphJson){
     }
 }
 
+/**
+ * Egy el formatumat ellenorzi.
+ * @param {*} edge
+ */
 function IsEdgeValid(edge){
+    // Az el induljon valahonnan, mutasson valahova, legyen megadva kapacitas es folyam ertek
     return (edge.fromNode != NaN && edge.toNode != NaN && edge.capacity != NaN && edge.flowValue != NaN) &&
+        // A kiindulasi valamint az erkezesi csucs egy, a grafban letezo csucs legyen
         (edge.fromNode > 0 && edge.fromNode <= numberOfNodes) &&
         (edge.toNode > 0 && edge.toNode <= numberOfNodes) &&
+        // A kapacitas, valamint a folyam ertek nem lehet negativ
         (edge.capacity >= 0 && edge.flowValue >= 0);
 }
 
