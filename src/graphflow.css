@@ -24,3 +24,7 @@ input{
     min-height: 500px;
     min-width: 500px;
 }
+
+.nodeCheckboxContainer{
+    max-width: 75px;
+}

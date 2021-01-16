@@ -17,11 +17,13 @@ const RESULT_CUT_ID = "networkCutValue";
 const RESULT_FLOW_ERRORS_ID = "flowErrors";
 const RESULT_CUT_ERRORS_ID = "cutErrors";
 const EDGE_EDITOR_ID = "edgeEditor";
+const CUT_NODES_EDITOR_ID = "cutEditor";
 const EDGE_EDITOR_ROW_CONTAINER_ID = "edgeEditorRows";
 const EDGE_FROM_NODE_CLASS = "fromNode";
 const EDGE_TO_NODE_CLASS = "toNode";
 const EDGE_EDGE_CAPACITY_CLASS = "edgeCapacity";
 const EDGE_FLOW_VALUE_CLASS = "flowValue";
+const NODE_CHECKBOX_CLASS = "cut_nodeCheckbox";
 const NUM_NODES_NOT_VALID = `Number of nodes provided is not valid! Minimum value must be enterd: ${GRAPH_MINIMUM_NODES}.`;
 const NUM_EDGES_NOT_VALID = `Number of edges provided is not valid! Minimum value must be enterd: ${GRAPH_MINIMUM_EDGES}.`;
 const SOURCE_TEXT = 'will be treated as source';
@@ -57,6 +59,7 @@ function onSetNumberOfNodesAndEdges(){
     numberOfEdges = numEdges;
 
     generateEdgeRows();
+    generateCutCheckboxes();
     showById(EDGE_EDITOR_ID);
 }
 
@@ -89,9 +92,23 @@ function generateEdgeRows(){
                 <label>Edge capacity: </label>
                 <input type="number" class="${EDGE_EDGE_CAPACITY_CLASS}" min="0"/>
             </div>
-        </div>\n`;
+        </div>`;
     }
     $(`#${EDGE_EDITOR_ROW_CONTAINER_ID}`).html(edgeRowsHTML);
+}
+
+function generateCutCheckboxes(){
+    var cutEditorHTML = `<p>Select the nodes wanted to be in the same egde set. If you dont want to provide an edge set for cut value calculation, just leave the checkboxes unticked.</p>`;
+    cutEditorHTML += `<div class="row">`
+    for(var node = 1; node <= numberOfNodes; ++node){
+        cutEditorHTML += `<div class="col nodeCheckboxContainer">
+            <input type="checkbox" class="${NODE_CHECKBOX_CLASS}" value="${node}"/>
+            <label class="nodeChkLabel">${node}${node == 1 ? " (source)" : (node == numberOfNodes ? " (sink)" : "")}</label>
+            </div>`
+        ;
+    }
+    cutEditorHTML += `</div>`;
+    $(`#${CUT_NODES_EDITOR_ID}`).html(cutEditorHTML);
 }
 
 function onSetNetworkProperties(){
@@ -103,7 +120,7 @@ function onSetNetworkProperties(){
         alert(e.message);
         return;
     }
-    console.log(NetworkProperties.getProperties(graph));
+    displayProperties(NetworkProperties.getProperties(graph));
 }
 
 async function onSetNetworkPropertiesFromFile(){
@@ -142,9 +159,8 @@ async function onSetNetworkPropertiesFromFile(){
         }
 
         graph = new Graph(graphJson.numberOfNodes, graphJson.edges, graphJson.cutSNodes);
-        var properties = NetworkProperties.getProperties(graph);
 
-        displayProperties(properties);
+        displayProperties(NetworkProperties.getProperties(graph));
     }
 }
 
@@ -166,7 +182,16 @@ function composeGraph(){
 
         edges.push(edge);
     }
-    return new Graph(numberOfNodes, edges, false);
+
+    var cutSNodes = [];
+    var chkQuery = $(`.${NODE_CHECKBOX_CLASS}`);
+    for(var i = 0; i < chkQuery.length; ++i){
+        if(chkQuery[i].checked){
+            cutSNodes.push(Number(chkQuery[i].value));
+        }
+    }
+    
+    return new Graph(numberOfNodes, edges, cutSNodes.length != 0 ? cutSNodes : null);
 }
 
 function checkNetworkFromFile(graphJson){
