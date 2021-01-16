@@ -1,3 +1,5 @@
+import { v4 as uuid } from 'uuid';
+
 export class Graph {
     constructor(numberOfNodes, edges, cutSNodes = null){
         this.numberOfNodes = numberOfNodes;
@@ -11,6 +13,7 @@ export class Graph {
 
 export class Edge {
     constructor(fromNode, toNode, capacity, flowValue){
+        this.id = uuid();
         this.fromNode = fromNode;
         this.toNode = toNode;
         this.capacity = capacity;
@@ -19,13 +22,14 @@ export class Edge {
 }
 
 export class NetworkProperties {
-    constructor(graph, errors, networkFlowValue, cutValue){
+    constructor(graph, errors, networkFlowValue, cutValue, cutEdgeIds){
         this.graph = graph;
         this.errors = errors;
         this.validNetwork = !errors || !errors.some(error => error.type == NetworkError.FLOW_ERROR);
         this.validCut = !errors || !errors.some(error => error.type == NetworkError.CUT_ERROR);
         this.networkFlowValue = networkFlowValue;
         this.cutValue = cutValue;
+        this.cutEdgeIds = cutEdgeIds;
     }
 
     static getProperties(graph){
@@ -35,12 +39,14 @@ export class NetworkProperties {
         var cutErrors = errors && errors.some(error => error.type == NetworkError.CUT_ERROR);
 
         var networkFlowValue = !flowErrors ? this.#calculateFlow(1, graph.edges, false) : null;
-        var cutValue = (!cutErrors && graph.cutSNodes) ? this.#getCutEdges(graph.cutSNodes, graph.edges)
-                                        .map(edge => edge.flowValue)
-                                        .reduce((accumulator, flowValue) => accumulator + flowValue, 0)
-                                : null;
-
-        return new NetworkProperties(graph, errors, networkFlowValue, cutValue);
+        var cutValue, cutEdgeIds = null;
+        if(!cutErrors && graph.cutSNodes){
+            var cutEdges = this.#getCutEdges(graph.cutSNodes, graph.edges);
+            cutValue = cutEdges.map(edge => edge.flowValue)
+                .reduce((accumulator, flowValue) => accumulator + flowValue, 0);
+            cutEdgeIds = cutEdges.map(ce => ce.id);
+        }
+        return new NetworkProperties(graph, errors, networkFlowValue, cutValue, cutEdgeIds);
     }
 
     static validateNetworkAndCut(graph) {

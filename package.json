@@ -49,6 +49,7 @@
   },
   "dependencies": {
     "cytoscape": "^3.17.1",
-    "html-webpack-plugin": "^4.5.1"
+    "html-webpack-plugin": "^4.5.1",
+    "uuid": "^8.3.2"
   }
 }

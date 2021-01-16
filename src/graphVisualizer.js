@@ -1,38 +1,62 @@
 import cytoscape from 'cytoscape';
 
 export class GraphVisualizer{
-    static visualize(graph, graphContainerId){
+    static visualize(networkProperites, graphContainerId){
         var container = document.getElementById(graphContainerId);
+        var graph = networkProperites.graph;
 
         var elements = [];
         // nodes
-        for(var i = 1; i <= graph.numberOfNodes; ++i){
-            elements.push({data: { id: i } });
+        for(var node = 1; node <= graph.numberOfNodes; ++node){
+            elements.push({ data: {
+                id: node,
+                displayText: node == 1 ? `${node} (src)` : ( node == graph.numberOfNodes ? `${node} (sink)` : node),
+                class: graph.cutProvided ? (graph.cutSNodes.includes(node) ? "sNodes" : "tNodes") : "regular" 
+            } });
         }
         // edges
         for(var i = 0; i < graph.edges.length; ++i){
             elements.push({ data: {
                 id: `Node#${i + 1}`,
+                class: graph.cutProvided ? (networkProperites.cutEdgeIds.includes(graph.edges[i].id) ? "edgeInCut" : "edgeOutOfCut" ) : "regular",
                 source: graph.edges[i].fromNode,
                 target: graph.edges[i].toNode,
                 flowAndCapacity: `${graph.edges[i].flowValue} / ${graph.edges[i].capacity}`
             } });
         }
 
-        var layout = {name: 'grid'}
+        var layout = {name: 'circle'};
 
         var style = [
             {
-                selector: 'node',
+                selector: 'node[class = "regular"]',
                 style: {
                   'text-valign': 'top',
                   'text-halign': 'left',
                   'background-color': '#000000',
-                  'label': 'data(id)'
+                  'label': 'data(displayText)'
                 }
             },
             {
-                selector: 'edge',
+                selector: 'node[class = "sNodes"]',
+                style: {
+                  'text-valign': 'top',
+                  'text-halign': 'left',
+                  'background-color': '#ff0000',
+                  'label': 'data(displayText)'
+                }
+            },
+            {
+                selector: 'node[class = "tNodes"]',
+                style: {
+                  'text-valign': 'top',
+                  'text-halign': 'left',
+                  'background-color': '#0000ff',
+                  'label': 'data(displayText)'
+                }
+            },
+            {
+                selector: 'edge[class = "regular"], edge[class = "edgeOutOfCut"]',
                 style: {
                   'text-valign': 'top',
                   'text-halign': 'center',
@@ -43,8 +67,21 @@ export class GraphVisualizer{
                   'label': 'data(flowAndCapacity)',
                   'curve-style': 'bezier'
                 }
+            },
+            {
+                selector: 'edge[class = "edgeInCut"]',
+                style: {
+                  'text-valign': 'top',
+                  'text-halign': 'center',
+                  'target-arrow-color': '#ff7a7a',
+                  'target-arrow-shape': 'triangle',
+                  'line-color': '#ff7a7a',
+                  'line-style': 'solid',
+                  'label': 'data(flowAndCapacity)',
+                  'curve-style': 'bezier'
+                }
             }
-        ]
+        ];
 
         return cytoscape({
             container: container,

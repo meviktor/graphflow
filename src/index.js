@@ -98,7 +98,7 @@ function generateEdgeRows(){
 }
 
 function generateCutCheckboxes(){
-    var cutEditorHTML = `<p>Select the nodes wanted to be in the same egde set. If you dont want to provide an edge set for cut value calculation, just leave the checkboxes unticked.</p>`;
+    var cutEditorHTML = `<p>Select the nodes wanted to be in the same egde set. If you don't want to provide an edge set for cut value calculation, just leave the checkboxes unticked.</p>`;
     cutEditorHTML += `<div class="row">`
     for(var node = 1; node <= numberOfNodes; ++node){
         cutEditorHTML += `<div class="col nodeCheckboxContainer">
@@ -158,7 +158,11 @@ async function onSetNetworkPropertiesFromFile(){
             return;
         }
 
-        graph = new Graph(graphJson.numberOfNodes, graphJson.edges, graphJson.cutSNodes);
+        var edges = [];
+        graphJson.edges.forEach(e => {
+            edges.push(new Edge(e.fromNode, e.toNode, e.capacity, e.flowValue));
+        });
+        graph = new Graph(graphJson.numberOfNodes, edges, graphJson.cutSNodes);
 
         displayProperties(NetworkProperties.getProperties(graph));
     }
@@ -250,7 +254,7 @@ function displayProperties(properties){
 
     showById(RESULTS_ID);
 
-    graphVisualization = GraphVisualizer.visualize(properties.graph, GRAPH_VISUALIZATION_ID);
+    graphVisualization = GraphVisualizer.visualize(properties, GRAPH_VISUALIZATION_ID);
 }
 
 function generateErrorListHTML(errors, errorType){
