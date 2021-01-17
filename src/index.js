@@ -1,5 +1,6 @@
 import { Graph, Edge, NetworkProperties, NetworkError } from './graph';
 import { GraphVisualizer } from './graphVisualizer';
+import './graphflow.css';
 
 var graphVisualization;
 var graph;
